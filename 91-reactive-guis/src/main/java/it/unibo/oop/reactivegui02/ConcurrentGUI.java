@@ -41,15 +41,15 @@ public final class ConcurrentGUI extends JFrame {
         final Agent agent = new Agent();
         new Thread(agent).start();
         /*
-         * Register a listener to increase counter
+         * Register a listener to increase counter.
          */
         up.addActionListener((e) -> agent.increaseCounting());
         /*
-         * Register a listener to decrements counter
+         * Register a listener to decrements counter.
          */
         down.addActionListener((e) -> agent.decrementCounting());
         /*
-         * Register a listener that stops it
+         * Register a listener that stops it.
          */
         stop.addActionListener((e) -> {
             agent.stopCounting();
@@ -84,21 +84,21 @@ public final class ConcurrentGUI extends JFrame {
             }
         }
 
-        /*
+        /**
          * External command to increase counter.
          */
         public void increaseCounting() {
             this.increase = true;
         }
 
-        /*
+        /**
          * External command to decrease counter.
          */
         public void decrementCounting() {
             this.increase = false;
         }
 
-        /*
+        /**
          * External command to stop counting.
          */
         public void stopCounting() {

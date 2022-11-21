@@ -94,14 +94,14 @@ public final class AnotherConcurrentGUI extends JFrame {
             }
         }
 
-        /*
+        /**
          * External command to increase counter.
          */
         public void increaseCounting() {
             this.increase = true;
         }
 
-        /*
+        /**
          * External command to decrease counter.
          */
         public void decrementCounting() {

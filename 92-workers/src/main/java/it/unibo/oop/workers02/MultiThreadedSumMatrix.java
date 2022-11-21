@@ -40,7 +40,7 @@ public class MultiThreadedSumMatrix implements SumMatrix {
 
         @Override
         public void run() {
-            System.out.println("Working from position " + startpos + " to position " + (startpos + nrow - 1)); // NOPMD
+            System.out.println("Working from row " + startpos + " to row " + (startpos + nrow - 1)); // NOPMD
             res = 0;
             for (int i = startpos; i < startpos + nrow && i < matrix.length; i++) {
                 for (final double d : matrix[i]) {
