@@ -9,6 +9,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import javax.swing.JOptionPane;
 
 /**
  * Second example of reactive GUI.
@@ -37,11 +38,6 @@ public final class ConcurrentGUI extends JFrame {
         panel.add(stop);
         this.getContentPane().add(panel);
         this.setVisible(true);
-        /*
-         * Create the counter agent and start it. This is actually not so good:
-         * thread management should be left to
-         * java.util.concurrent.ExecutorService
-         */
         final Agent agent = new Agent();
         new Thread(agent).start();
         /*
@@ -55,7 +51,10 @@ public final class ConcurrentGUI extends JFrame {
         /*
          * Register a listener that stops it
          */
-        stop.addActionListener((e) -> agent.stopCounting());
+        stop.addActionListener((e) -> {
+            agent.stopCounting();
+            disableButtons();
+        });
     }
 
     /*
@@ -63,16 +62,6 @@ public final class ConcurrentGUI extends JFrame {
      * invisible outside and encapsulated.
      */
     private class Agent implements Runnable {
-        /*
-         * Stop is volatile to ensure visibility. Look at:
-         * 
-         * http://archive.is/9PU5N - Sections 17.3 and 17.4
-         * 
-         * For more details on how to use volatile:
-         * 
-         * http://archive.is/4lsKW
-         * 
-         */
         private volatile boolean stop;
         private volatile boolean increase = true;
         private int counter;
@@ -81,7 +70,6 @@ public final class ConcurrentGUI extends JFrame {
         public void run() {
             while (!this.stop) {
                 try {
-                    // The EDT doesn't access `counter` anymore, it doesn't need to be volatile 
                     final var nextText = Integer.toString(this.counter);
                     SwingUtilities.invokeAndWait(() -> ConcurrentGUI.this.display.setText(nextText));
                     if (increase) {
@@ -91,37 +79,36 @@ public final class ConcurrentGUI extends JFrame {
                     }
                     Thread.sleep(100);
                 } catch (InvocationTargetException | InterruptedException ex) {
-                    /*
-                     * This is just a stack trace print, in a real program there
-                     * should be some logging and decent error reporting
-                     */
-                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, ex, "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         }
 
         /*
-         * External command to increase counter
+         * External command to increase counter.
          */
         public void increaseCounting() {
             this.increase = true;
         }
 
         /*
-         * External command to decrease counter
+         * External command to decrease counter.
          */
         public void decrementCounting() {
             this.increase = false;
         }
 
-        /**
+        /*
          * External command to stop counting.
          */
         public void stopCounting() {
             this.stop = true;
-            ConcurrentGUI.this.up.setEnabled(false);
-            ConcurrentGUI.this.down.setEnabled(false);
-            ConcurrentGUI.this.stop.setEnabled(false);
         }
+    }
+
+    private void disableButtons() {
+        up.setEnabled(false);
+        down.setEnabled(false);
+        stop.setEnabled(false);
     }
 }

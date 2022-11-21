@@ -1,8 +1,12 @@
 plugins {
     java
     application
+    id("org.danilopianini.gradle-java-qa") version "0.40.0"
 }
 
+repositories {
+    mavenCentral();
+}
 val mainClass: String by project
 
 application {

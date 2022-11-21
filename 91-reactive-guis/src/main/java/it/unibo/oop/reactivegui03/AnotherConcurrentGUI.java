@@ -7,6 +7,7 @@ import java.lang.reflect.InvocationTargetException;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
@@ -38,32 +39,27 @@ public final class AnotherConcurrentGUI extends JFrame {
         panel.add(stop);
         this.getContentPane().add(panel);
         this.setVisible(true);
-        /*
-         * Create the counter agent and start it. This is actually not so good:
-         * thread management should be left to
-         * java.util.concurrent.ExecutorService
-         */
         final Agent agent = new Agent();
         new Thread(agent).start();
         new Thread(() -> {
             try {
                 Thread.sleep(EXIT_TIME);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                JOptionPane.showMessageDialog(null, e, "Error", JOptionPane.ERROR_MESSAGE);
             }
             agent.stopCounting();
             disableButtons();
         }).start();
         /*
-         * Register a listener to increase counter
+         * Register a listener to increase counter.
          */
         up.addActionListener((e) -> agent.increaseCounting());
         /*
-         * Register a listener to decrements counter
+         * Register a listener to decrements counter.
          */
         down.addActionListener((e) -> agent.decrementCounting());
         /*
-         * Register a listener that stops it
+         * Register a listener that stops it.
          */
         stop.addActionListener((e) -> {
             agent.stopCounting();
@@ -76,16 +72,6 @@ public final class AnotherConcurrentGUI extends JFrame {
      * invisible outside and encapsulated.
      */
     private class Agent implements Runnable {
-        /*
-         * Stop is volatile to ensure visibility. Look at:
-         * 
-         * http://archive.is/9PU5N - Sections 17.3 and 17.4
-         * 
-         * For more details on how to use volatile:
-         * 
-         * http://archive.is/4lsKW
-         * 
-         */
         private volatile boolean stop;
         private volatile boolean increase = true;
         private int counter;
@@ -94,7 +80,6 @@ public final class AnotherConcurrentGUI extends JFrame {
         public void run() {
             while (!this.stop) {
                 try {
-                    // The EDT doesn't access `counter` anymore, it doesn't need to be volatile
                     final var nextText = Integer.toString(this.counter);
                     SwingUtilities.invokeAndWait(() -> AnotherConcurrentGUI.this.display.setText(nextText));
                     if (increase) {
@@ -104,24 +89,20 @@ public final class AnotherConcurrentGUI extends JFrame {
                     }
                     Thread.sleep(100);
                 } catch (InvocationTargetException | InterruptedException ex) {
-                    /*
-                     * This is just a stack trace print, in a real program there
-                     * should be some logging and decent error reporting
-                     */
-                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, ex, "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         }
 
         /*
-         * External command to increase counter
+         * External command to increase counter.
          */
         public void increaseCounting() {
             this.increase = true;
         }
 
         /*
-         * External command to decrease counter
+         * External command to decrease counter.
          */
         public void decrementCounting() {
             this.increase = false;
